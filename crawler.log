@@ -1,0 +1,9 @@
+2025-12-19 00:44:43,609 - INFO - [get_nju_news.py] - 开始爬虫任务...
+2025-12-19 00:44:43,609 - INFO - [get_nju_news.py] - 正在处理栏目: fmxw
+2025-12-19 00:47:49,711 - INFO - [get_nju_news.py] - 正在处理栏目: tzgg
+2025-12-19 00:49:32,513 - INFO - [get_nju_news.py] - 正在处理栏目: ynxw
+2025-12-19 00:52:01,216 - INFO - [get_nju_news.py] - 正在处理栏目: xyld
+2025-12-19 00:53:17,900 - INFO - [get_nju_news.py] - 正在处理栏目: dss
+2025-12-19 00:54:05,893 - INFO - [get_nju_news.py] - 正在处理栏目: xss
+2025-12-19 00:57:16,357 - ERROR - [get_nju_news.py] - 数据库操作失败: 1054 (42S22): Unknown column 'process_status' in 'field list'
+2025-12-19 00:57:16,360 - INFO - [get_nju_news.py] - 爬虫任务结束。
