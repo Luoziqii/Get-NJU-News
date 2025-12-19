@@ -145,15 +145,9 @@ class CrawlerModule:
             return []
 
     def save_to_db(self, news_items):
-        """
-        适配新字段的数据库存入逻辑：
-        1. 初始插入时：process_status=0, match_type=0, matched_keywords=[]
-        2. 更新时：若内容变化，重置所有状态字段
-        """
         if not news_items:
             return
 
-        # 适配新字段的 SQL
         query = """
         INSERT INTO news_all (
             url, title, publish_time, content, 
@@ -166,21 +160,19 @@ class CrawlerModule:
             image_links = VALUES(image_links),
             attachment_links = VALUES(attachment_links),
             crawl_time = VALUES(crawl_time),
-            -- 核心逻辑：如果内容改变，重置所有处理状态
+            -- 核心：如果正文变了，重置为初始状态0，清空匹配记录
+            process_status = IF(content != VALUES(content), 0, process_status),
             match_type = IF(content != VALUES(content), 0, match_type),
             matched_keywords = IF(content != VALUES(content), '[]', matched_keywords),
-            process_status = IF(content != VALUES(content), 0, process_status),
             content = VALUES(content)
         """
 
-        conn = None
         try:
             conn = mysql.connector.connect(**self.db_config)
             cursor = conn.cursor()
-
-            data_to_insert = []
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+            data_to_insert = []
             for item in news_items:
                 url_hash = hashlib.md5(item['url'].encode()).hexdigest()
                 data_to_insert.append(
@@ -193,17 +185,17 @@ class CrawlerModule:
                         json.dumps(item['attachments']),
                         url_hash,
                         now,
-                        0,  # process_status: 初始为 0
-                        0,  # match_type: 初始为 0
-                        '[]',  # matched_keywords: 初始为空 JSON 数组
+                        0,  # process_status = 0 (初始)
+                        0,  # match_type = 0
+                        '[]',  # matched_keywords = []
                     )
                 )
 
             cursor.executemany(query, data_to_insert)
             conn.commit()
-            logger.info(f"数据库同步完成，处理记录数: {len(news_items)}")
-        except Error as e:
-            logger.error(f"数据库同步失败: {e}")
+            logging.info(f"爬虫存入完毕，待处理记录: {len(news_items)}")
+        except Exception as e:
+            logging.error(f"数据库写入失败: {e}")
         finally:
             if conn and conn.is_connected():
                 cursor.close()
